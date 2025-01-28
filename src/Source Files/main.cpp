@@ -4,7 +4,10 @@
 #include <generator.hpp>
 
 int main(const uint32_t argc, char** args) {
-    init(argc, args);
+    if (!init(argc, args)) {
+        printHelp();
+        return 0;
+    };
     generate();
     return 0;
 }
