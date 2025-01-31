@@ -19,7 +19,17 @@ constexpr char* HELP =
 "    --incl-dirs -> Specify additional include directories beside the default header and src files\n"
 "    --link-dirs -> Specify link directories for the libraries to be linked from.\n\n"
 "!!! ALL options will default to a value if ommited:\n"
-"";
+"    -n -p --name --project -> '...'\n"
+"    -v --version -> '3.26'\n"
+"    -o --output-dir -> 'bin'\n"
+"    -s --source-dir -> 'src'\n"
+"    --copy-res -> false\n"
+"    --incl-dirs -> none\n"
+"    --link-dirs -> none\n\n"
+"!!! The source folder contains three folders in the default CMake config:\n"
+" - 'Source Files'\n"
+" - 'Header Files'\n"
+" - 'Resource Files' (only included if the --copy-res option is specified)\n";
 
 std::fstream file;
 
@@ -232,7 +242,7 @@ void generate() {
 }
 
 void printHelp() {
-    std::cout << "CStart Help Page:\n\n";
+    std::cout << HELP;
 }
 
 #endif
