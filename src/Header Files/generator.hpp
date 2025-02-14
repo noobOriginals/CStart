@@ -52,21 +52,21 @@ constexpr char* DEFAULT_OUT_DIRS =
 constexpr char* DEFAULT_SOURCES_CXX = 
     "set (SrcPath \"${CMAKE_SOURCE_DIR}/src/Source Files\")\n"
     "set (HeaderPath \"${CMAKE_SOURCE_DIR}/src/Header Files\")\n"
-    "file (GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.cpp\" \"${SrcPath}/*.c\" \"${HeaderPath}/*.hpp\" \"${HeaderPath}/*.h\")\n\n";
+    "file (GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.cpp\" \"${SrcPath}/*.c\")\n\n";
 constexpr char* DEFAULT_SOURCES_C = 
     "set (SrcPath \"${CMAKE_SOURCE_DIR}/src/Source Files\")\n"
     "set (HeaderPath \"${CMAKE_SOURCE_DIR}/src/Header Files\")\n"
-    "file (GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.c\" \"${HeaderPath}/*.h\")\n\n";
+    "file (GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.c\")\n\n";
 constexpr char* DEFAULT_SOURCES_RES_CXX = 
     "set (SrcPath \"${CMAKE_SOURCE_DIR}/src/Source Files\")\n"
     "set (HeaderPath \"${CMAKE_SOURCE_DIR}/src/Header Files\")\n"
     "set (ResourcePath \"${CMAKE_SOURCE_DIR}/src/Resource Files\")\n"
-    "file (GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.cpp\" \"${SrcPath}/*.c\" \"${HeaderPath}/*.hpp\" \"${HeaderPath}/*.h\")\n\n";
+    "file (GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.cpp\" \"${SrcPath}/*.c\")\n\n";
 constexpr char* DEFAULT_SOURCES_RES_C = 
     "set (SrcPath \"${CMAKE_SOURCE_DIR}/src/Source Files\")\n"
     "set (HeaderPath \"${CMAKE_SOURCE_DIR}/src/Header Files\")\n"
     "set (ResourcePath \"${CMAKE_SOURCE_DIR}/src/Resource Files\")\n"
-    "file (GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.c\" \"${HeaderPath}/*.h\")\n\n";
+    "file (GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.c\")\n\n";
 constexpr char* DEFAULT_INCLUDE_DIRS = "include_directories(${HeaderPath})\n\n";
 constexpr char* DEFAULT_ADD_EXEC_CXX = 
     "add_executable(${PROJECT_NAME} ${Sources})\n"
@@ -255,13 +255,13 @@ void generate() {
         file << "set (SrcPath \"${CMAKE_SOURCE_DIR}/" << SOURCE << "/Source Files\")\n";
         file << "set (HeaderPath \"${CMAKE_SOURCE_DIR}/" << SOURCE << "/Header Files\")\n";
         if (copyRes) file << "set (ResourcePath \"${CMAKE_SOURCE_DIR}/" << SOURCE << "/Resource Files\")\n";
-        if (languageIsC) file << "file (GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.c\" \"${HeaderPath}/*.h\")\n\n";
-        else file << "file (GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.cpp\" \"${SrcPath}/*.c\" \"${HeaderPath}/*.hpp\" \"${HeaderPath}/*.h\")\n\n";
+        if (languageIsC) file << "file (GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.c\")\n\n";
+        else file << "file (GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.cpp\" \"${SrcPath}/*.c\")\n\n";
     }
     else if (copyRes) file << (languageIsC ? DEFAULT_SOURCES_RES_C : DEFAULT_SOURCES_RES_CXX);
     else file << (languageIsC ? DEFAULT_SOURCES_C : DEFAULT_SOURCES_CXX);
     if (inclDirsProvided) {
-        file << "include_directories(${HeaderPath} ${SrcPath} ";
+        file << "include_directories(${HeaderPath} ";
         for (uint32 i = 0; i < incsize; i++) {
             if (INCL[i][0] == '+') file << "$ENV{" << std::string(INCL[i]).substr(1) << "}";
             else file << "\"" << INCL[i] << "\"";
