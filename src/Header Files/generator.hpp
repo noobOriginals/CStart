@@ -17,7 +17,6 @@ const char* HELP =
 "    -n -p --name --project -> Set the project name inside CMake (also the executable name)\n"
 "    -v --version -> Set the required CMake version\n"
 "    -o --output-dir -> The folder for the build output\n"
-"    -s --source-dir -> The folder for the sources (it includes the 'sources' and 'include' directories)\n"
 "    -l --libraries -> The name of the libraries that have to be linked (e.g. from 'vulkan-1.lib' you use 'vulkan-1')\n"
 "    --copy-res -> Enables the use of a 'resource' folder inside the src folder and copies the resources to the bin output\n"
 "                  folder before compilation for accesing them in your program.\n"
@@ -29,13 +28,12 @@ const char* HELP =
 "    -n -p --name --project -> '...'\n"
 "    -v --version -> '3.26.0'\n"
 "    -o --output-dir -> 'bin'\n"
-"    -s --source-dir -> 'src'\n"
 "    --copy-res -> false\n"
 "    --incl-dirs -> none\n"
 "    --link-dirs -> none\n"
 "    --language -> c++\n\n"
-"!!! The source folder contains three folders in the default CMake config:\n"
-" - 'sources'\n"
+"!!! The project folder will contain three folders in the default CMake config:\n"
+" - 'src'\n"
 " - 'include'\n"
 " - 'resource' (only included if the --copy-res option is specified)\n\n"
 "!!! cstart automatically creates those directories if it doesn't find them in the 'start' folder.\n";
@@ -51,22 +49,22 @@ const char* DEFAULT_OUT_DIRS =
     "set(CMAKE_LIBRARY_OUTPUT_DIRECTORY \"${FullOutputDir}\")\n"
     "set(CMAKE_RUNTIME_OUTPUT_DIRECTORY \"${FullOutputDir}\")\n\n";
 const char* DEFAULT_SOURCES_CXX =
-    "set(SrcPath \"${CMAKE_SOURCE_DIR}/src/sources\")\n"
-    "set(HeaderPath \"${CMAKE_SOURCE_DIR}/src/include\")\n"
+    "set(SrcPath \"${CMAKE_SOURCE_DIR}/src\")\n"
+    "set(HeaderPath \"${CMAKE_SOURCE_DIR}/include\")\n"
     "file(GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.cpp\" \"${SrcPath}/*.c\")\n\n";
 const char* DEFAULT_SOURCES_C =
-    "set(SrcPath \"${CMAKE_SOURCE_DIR}/src/sources\")\n"
-    "set(HeaderPath \"${CMAKE_SOURCE_DIR}/src/include\")\n"
+    "set(SrcPath \"${CMAKE_SOURCE_DIR}/src\")\n"
+    "set(HeaderPath \"${CMAKE_SOURCE_DIR}/include\")\n"
     "file(GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.c\")\n\n";
 const char* DEFAULT_SOURCES_RES_CXX =
-    "set(SrcPath \"${CMAKE_SOURCE_DIR}/src/sources\")\n"
-    "set(HeaderPath \"${CMAKE_SOURCE_DIR}/src/include\")\n"
-    "set(ResourcePath \"${CMAKE_SOURCE_DIR}/src/resource\")\n"
+    "set(SrcPath \"${CMAKE_SOURCE_DIR}/src\")\n"
+    "set(HeaderPath \"${CMAKE_SOURCE_DIR}/include\")\n"
+    "set(ResourcePath \"${CMAKE_SOURCE_DIR}/resource\")\n"
     "file(GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.cpp\" \"${SrcPath}/*.c\")\n\n";
 const char* DEFAULT_SOURCES_RES_C =
-    "set(SrcPath \"${CMAKE_SOURCE_DIR}/src/sources\")\n"
-    "set(HeaderPath \"${CMAKE_SOURCE_DIR}/src/include\")\n"
-    "set(ResourcePath \"${CMAKE_SOURCE_DIR}/src/resource\")\n"
+    "set(SrcPath \"${CMAKE_SOURCE_DIR}/src\")\n"
+    "set(HeaderPath \"${CMAKE_SOURCE_DIR}/include\")\n"
+    "set(ResourcePath \"${CMAKE_SOURCE_DIR}/resource\")\n"
     "file(GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.c\")\n\n";
 const char* DEFAULT_INCLUDE_DIRS = "include_directories(${HeaderPath})\n\n";
 const char* DEFAULT_ADD_EXEC_CXX =
@@ -108,7 +106,6 @@ const char* MAIN_SNIPPET_CXX =
 const char* NAME;
 const char* VERSION;
 const char* OUTPUT;
-const char* SOURCE;
 
 char** LIBS;
 uint32 libsize;
@@ -178,13 +175,6 @@ bool init(int32 argc, char** args) {
             outputProvided = true;
             continue;
         }
-        if (strcmp(args[i], options::S) == 0 || strcmp(args[i], options::SOURCE_DIR) == 0) {
-            if (sourceProvided) continue;
-            if (++i >= argc) break;
-            SOURCE = args[i];
-            sourceProvided = true;
-            continue;
-        }
         if (strcmp(args[i], options::LANGUAGE) == 0) {
             if (languageProvided) continue;
             if (++i >= argc) break;
@@ -252,14 +242,7 @@ void generate() {
     if (outputProvided) file << "set(FullOutputDir \"${CMAKE_SOURCE_DIR}/" << OUTPUT << "\")\n";
     else file << DEFAULT_OUTPUT;
     file << DEFAULT_OUT_DIRS;
-    if (sourceProvided) {
-        file << "set(SrcPath \"${CMAKE_SOURCE_DIR}/" << SOURCE << "/sources\")\n";
-        file << "set(HeaderPath \"${CMAKE_SOURCE_DIR}/" << SOURCE << "/include\")\n";
-        if (copyRes) file << "set(ResourcePath \"${CMAKE_SOURCE_DIR}/" << SOURCE << "/resource\")\n";
-        if (languageIsC) file << "file(GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.c\")\n\n";
-        else file << "file(GLOB_RECURSE Sources CONFIGURE_DEPENDS \"${SrcPath}/*.cpp\" \"${SrcPath}/*.c\")\n\n";
-    }
-    else if (copyRes) file << (languageIsC ? DEFAULT_SOURCES_RES_C : DEFAULT_SOURCES_RES_CXX);
+    if (copyRes) file << (languageIsC ? DEFAULT_SOURCES_RES_C : DEFAULT_SOURCES_RES_CXX);
     else file << (languageIsC ? DEFAULT_SOURCES_C : DEFAULT_SOURCES_CXX);
     if (inclDirsProvided) {
         file << "include_directories(${HeaderPath} ";
@@ -296,40 +279,20 @@ void generate() {
     if (inclDirsProvided) free(INCL);
     if (linkDirsProvided) free(LNK);
 
-    if (sourceProvided) {
-        if (!std::filesystem::exists(std::string(SOURCE).c_str())) std::filesystem::create_directory(std::string(SOURCE).c_str());
-        if (!std::filesystem::exists(("./" + std::string(SOURCE) + "/sources").c_str())) std::filesystem::create_directory(("./" + std::string(SOURCE) + "/sources").c_str());
-        if (!std::filesystem::exists(("./" + std::string(SOURCE) + "/include").c_str())) std::filesystem::create_directory(("./" + std::string(SOURCE) + "/include").c_str());
-        if (copyRes && !std::filesystem::exists(("./" + std::string(SOURCE) + "/resource").c_str())) std::filesystem::create_directory(("./" + std::string(SOURCE) + "/resource").c_str());
-        if (languageIsC) {
-            if (!std::filesystem::exists(("./" + std::string(SOURCE) + "/sources/main.c").c_str())) {
-                std::fstream file(("./" + std::string(SOURCE) + "/sources/main.c").c_str(), std::ios::out);
-                file << MAIN_SNIPPET_C;
-            }
-        }
-        else {
-            if (!std::filesystem::exists(("./" + std::string(SOURCE) + "/sources/main.cpp").c_str())) {
-                std::fstream file(("./" + std::string(SOURCE) + "/sources/main.cpp").c_str(), std::ios::out);
-                file << MAIN_SNIPPET_CXX;
-            }
+    if (!std::filesystem::exists("./src")) std::filesystem::create_directory("./src");
+    if (!std::filesystem::exists("./src")) std::filesystem::create_directory("./src");
+    if (!std::filesystem::exists("./include")) std::filesystem::create_directory("./include");
+    if (copyRes && !std::filesystem::exists("./resource")) std::filesystem::create_directory("./resource");
+    if (languageIsC) {
+        if (!std::filesystem::exists("./src/main.c")) {
+            std::fstream file("./src/main.c", std::ios::out);
+            file << MAIN_SNIPPET_C;
         }
     }
     else {
-        if (!std::filesystem::exists("./src")) std::filesystem::create_directory("./src");
-        if (!std::filesystem::exists("./src/sources")) std::filesystem::create_directory("./src/sources");
-        if (!std::filesystem::exists("./src/include")) std::filesystem::create_directory("./src/include");
-        if (copyRes && !std::filesystem::exists("./src/resource")) std::filesystem::create_directory("./src/resource");
-        if (languageIsC) {
-            if (!std::filesystem::exists("./src/sources/main.c")) {
-                std::fstream file("./src/sources/main.c", std::ios::out);
-                file << MAIN_SNIPPET_C;
-            }
-        }
-        else {
-            if (!std::filesystem::exists("./src/sources/main.cpp")) {
-                std::fstream file("./src/sources/main.cpp", std::ios::out);
-                file << MAIN_SNIPPET_CXX;
-            }
+        if (!std::filesystem::exists("./src/main.cpp")) {
+            std::fstream file("./src/main.cpp", std::ios::out);
+            file << MAIN_SNIPPET_CXX;
         }
     }
 }
