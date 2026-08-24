@@ -1,16 +1,17 @@
 cmake_minimum_required(VERSION 3.20)
-project(CStart VERSION 0.1.0 LANGUAGES C CXX)
+project(CStart VERSION 0.1.0 LANGUAGES CXX)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+add_executable(cstart "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
+target_compile_features(cstart PUBLIC cxx_std_17)
+if (MSVC)
+    target_compile_options(cstart PRIVATE
+        $<$<CONFIG:Debug>:/W4>
+        $<$<CONFIG:Release>:/O2>
+    )
+else()
+    target_compile_options(cstart PRIVATE
+        $<$<CONFIG:Debug>:-Wextra -Wunused -Wsign-conversion -Wpedantic>
+        $<$<CONFIG:Release>:-O3>
+    )
+endif()
 
-set (FullOutputDir "${CMAKE_SOURCE_DIR}/bin")
-set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${FullOutputDir}/Static Lbraries")
-set (CMAKE_LIBRARY_OUTPUT_DIRECTORY "${FullOutputDir}")
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY "${FullOutputDir}")
-
-set (SrcPath "${CMAKE_SOURCE_DIR}/src/Source Files")
-set (HeaderPath "${CMAKE_SOURCE_DIR}/src/Header Files")
-file(GLOB Sources CONFIGURE_DEPENDS "${SrcPath}/*.cpp" "${SrcPath}/*.c" "${HeaderPath}/*.hpp" "${HeaderPath}/*.h")
-
-include_directories(${HeaderPath} ${SrcPath})
-
-add_executable("${PROJECT_NAME}" ${Sources})
-target_compile_features("${PROJECT_NAME}" PUBLIC cxx_std_17)

@@ -1,2 +1,5 @@
-/bin/
-/build/
+.cache
+.DS_Store
+bin
+build
+
