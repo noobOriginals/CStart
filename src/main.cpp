@@ -9,7 +9,7 @@ int main(int argc, char** args) {
     parser.put<double>("double", 0.0, default_parser::parseDouble);
     parser.put<std::string>("str", "basic", default_parser::parseString);
     parser.put<std::vector<std::string>>("strlist", std::vector<std::string>(0), default_parser::parseStringList);
-    parser.parse(argc, args);
+    parser.parse((size_t) argc, args);
     std::cout << parser.get<bool>("help") << "\n";
     std::cout << parser.get<int>("int") << "\n";
     std::cout << parser.get<double>("double") << "\n";

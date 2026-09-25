@@ -77,26 +77,26 @@ private:
 };
 
 namespace default_parser {
-    bool parseBool(const std::string& val) {
+    inline bool parseBool(const std::string& val) {
         if (val == "false") {
             return false;
         }
         return true;
     }
 
-    int parseInt(const std::string& val) {
+    inline int parseInt(const std::string& val) {
         return atoi(val.c_str());
     }
 
-    double parseDouble(const std::string& val) {
+    inline double parseDouble(const std::string& val) {
         return atof(val.c_str());
     }
 
-    std::string parseString(const std::string& val) {
+    inline std::string parseString(const std::string& val) {
         return val;
     }
 
-    std::vector<std::string> parseStringList(const std::string& val) {
+    inline std::vector<std::string> parseStringList(const std::string& val) {
         std::string str = val;
         std::vector<std::string> v;
         size_t i = str.find_first_of(':');
@@ -110,5 +110,4 @@ namespace default_parser {
         }
         return v;
     }
-
 }
