@@ -1,5 +1,6 @@
 .cache
 .DS_Store
+.vscode
 bin
 build
-
+tmp

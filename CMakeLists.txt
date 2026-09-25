@@ -14,4 +14,3 @@ else()
         $<$<CONFIG:Release>:-O3>
     )
 endif()
-
