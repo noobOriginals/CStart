@@ -16,15 +16,16 @@ public:
         options[alias] = option->second;
     }
     void parse(size_t argCount, char** args) {
+        std::string name = "", value = "";
         for (size_t i = 1; i < argCount; i++) {
             std::string arg(args[i]);
-            size_t delimiter = arg.find_first_of('=');
-            std::string value = "";
-            if (delimiter < arg.size()) {
-                value = arg.substr(delimiter + 1, arg.size() - delimiter - 1);
-                arg = arg.substr(0, delimiter);
+            if (arg[0] == '-') {
+                name = arg.substr(1);
+                value = "";
+            } else {
+                value = arg;
             }
-            auto option = options.find(arg);
+            auto option = options.find(name);
             if (option != options.end()) {
                 option->second.valueParser(value, option->second.ptr);
             }
