@@ -1,5 +1,4 @@
-#include <ostream>
-#include <cstdio>
+#include <iostream>
 #include <cstdarg>
 #include <string>
 #include <vector>
@@ -10,14 +9,22 @@ public:
     Command(const std::string& name) : name(name) {}
     std::string build(const std::string& arguments) { return name + "(" + arguments + ")"; }
     std::string build(const char* format, ...) {
-        std::string buffer(512, 0);
         va_list args;
         va_start(args, format);
-        int n = va_arg(args, int);
-        snprintf(buffer.data(), 512, format, args);
+        std::string f = format, str = "";
+        size_t param = f.find_first_of('%');
+        while (param < f.size()) {
+            str += f.substr(0, param);
+            switch (f[param + 1]) {
+                case 's': str += va_arg(args, const char*); break;
+                case 'd': case 'i': str += std::to_string(va_arg(args, int));
+                default: std::cerr << "ERROR at Command::build(const char*, ...): invalid format %" << f[param + 1] << "\n"; return "";
+            }
+            f = f.substr(param + 2);
+            param = f.find_first_of('%');
+        }
         va_end(args);
-        buffer.resize(buffer.find_first_of((char) 0));
-        return name + "(" + buffer + ")";
+        return build(str);
     }
 
 private:
@@ -38,6 +45,7 @@ private:
 };
 
 inline std::ostream& operator<<(std::ostream& out, const CommandGroup& commands) {
-    for (size_t i = 0; i < commands.size(); i++) { out << commands[i] << "\n"; }
+    for (size_t i = 0; i < commands.size() - 1; i++) { out << commands[i] << "\n"; }
+    out << commands[commands.size() - 1];
     return out;
 }

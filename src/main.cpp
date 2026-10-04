@@ -54,6 +54,6 @@ int main(int argc, char** args) {
         opt::projectVersion.c_str(),
         opt::languages.c_str())
     );
-    std::cout << header;
+    std::cout << header << "\n";
     return 0;
 }
