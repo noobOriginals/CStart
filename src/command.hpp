@@ -24,6 +24,7 @@ public:
             param = f.find_first_of('%');
         }
         va_end(args);
+        str += f;
         return build(str);
     }
 

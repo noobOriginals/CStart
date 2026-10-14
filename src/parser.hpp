@@ -20,15 +20,21 @@ public:
         for (size_t i = 1; i < argCount; i++) {
             std::string arg(args[i]);
             if (arg[0] == '-') {
+                auto option = options.find(name);
+                if (option != options.end()) {
+                    value.pop_back();
+                    option->second.valueParser(value, option->second.ptr);
+                }
                 name = arg.substr(1);
                 value = "";
             } else {
-                value = arg;
+                value += arg + " ";
             }
-            auto option = options.find(name);
-            if (option != options.end()) {
-                option->second.valueParser(value, option->second.ptr);
-            }
+        }
+        auto option = options.find(name);
+        if (option != options.end()) {
+            value.pop_back();
+            option->second.valueParser(value, option->second.ptr);
         }
     }
 
@@ -55,21 +61,29 @@ namespace default_parser {
     }
 
     inline void parseString(const std::string& val, void* ptr) {
-       *((std::string*) ptr) =  val;
+       *((std::string*) ptr) = val;
     }
 
     inline void parseStringList(const std::string& val, void* ptr) {
         std::string str = val;
         std::vector<std::string> v;
-        size_t i = str.find_first_of(':');
-        while (i < str.size()) {
-            v.push_back(str.substr(0, i));
-            str = str.substr(i + 1);
-            i = str.find_first_of(':');
+        size_t b = 0, e = str.find_first_of(' ');
+        if (str[0] == '"') {
+            b = 1;
+            e = str.substr(b).find_first_of('"');
+        }
+        while (e < str.size()) {
+            v.push_back(str.substr(b, e));
+            str = str.substr(e + b + 1);
+            b = 0, e = str.find_first_of(' ');
+            if (str[0] == '"') {
+                b = 1;
+                e = str.substr(b).find_first_of('"');
+            }
         }
         if (!str.empty()) {
             v.push_back(str);
         }
-        *((std::vector<std::string>*) ptr) =  v;
+        *((std::vector<std::string>*) ptr) = v;
     }
 }
